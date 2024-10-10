@@ -7,6 +7,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as path from "node:path";
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ScrapingGateway } from '../scraping/ScrapingGateway';
 
 const execPromise = promisify(exec);
 
@@ -14,9 +15,11 @@ const execPromise = promisify(exec);
 export class DataService {
   private scrapingProgress = 0;
   private readonly logger = new Logger(DataService.name);
-  constructor(private readonly prismaService: PrismaService, @InjectModel(Data.name) private dataModel: Model<Data>) {
 
-  }
+  constructor(
+    private readonly scrapingGateway: ScrapingGateway,
+    private readonly prismaService: PrismaService, 
+    @InjectModel(Data.name) private dataModel: Model<Data>) {}
 
   async create(createDataDto: CreateDataDto): Promise<Data> {
     const createdData = new this.dataModel(createDataDto);
@@ -49,6 +52,10 @@ export class DataService {
     return this.scrapingProgress;
   }
 
+  updateScrapingProgress(progress: number) {
+    this.scrapingProgress = progress;
+  }
+
   async triggerScraping(): Promise<{ success: boolean; message: string; summary?: any }> {
     this.scrapingProgress = 0;
     try {
@@ -59,7 +66,7 @@ export class DataService {
       const venvPath = path.join(venvDir, 'venv', 'bin', 'activate');
       const requirementsPath = path.join(scriptDir, 'requirements.txt');
       
-      const command = `source ${venvPath} && python ${scriptPath}`;
+      const command = `source ${venvPath} && python3 ${scriptPath}`;
       const installCommand = `source ${venvDir}/venv/bin/activate && pip install -r ${requirementsPath}`;
       
       this.logger.log(`Installing requirements: ${installCommand}`);
@@ -85,6 +92,15 @@ export class DataService {
       if (progressMatch) {
           this.scrapingProgress = parseInt(progressMatch[1]);
       }
+      for (let i = 0; i <= 100; i += 16) {
+        this.scrapingProgress = i;
+        this.scrapingGateway.sendProgressUpdate(i);
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate scraping delay
+      }
+      
+      this.scrapingProgress = 100;
+      this.scrapingGateway.sendProgressUpdate(100);
+
       const insertedRecordsMatch = stdout.match(/Inserted (\d+) records/);
       const insertedRecords = insertedRecordsMatch ? parseInt(insertedRecordsMatch[1]) : 0;
 

@@ -5,14 +5,16 @@ import { DataService } from './data.service';
 import { Data, DataSchema } from './schemas/data.schema';
 import { ConfigModule } from "@nestjs/config";
 import { PrismaModule } from 'src/prisma/prisma.module';
-
+import { ScrapingModule } from 'src/scraping/scraping.module';
 @Module({
   imports: [
     PrismaModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    MongooseModule.forFeature([{ name: Data.name, schema: DataSchema }])],
+    MongooseModule.forFeature([{ name: Data.name, schema: DataSchema }]),
+    ScrapingModule,
+  ],
   controllers: [DataController],
   providers: [DataService],
 })
