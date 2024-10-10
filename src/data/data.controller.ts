@@ -44,30 +44,32 @@ export class DataController {
 
   @Post('trigger-scraping')
   async triggerScraping() {
-    try {
-      const result = await this.dataService.triggerScraping();
+    await this.dataService.triggerScraping();
+    return {message : 'Scraping started'};
+    // try {
+    //   const result = await this.dataService.triggerScraping();
 
-      if (result.success) {
-        return {
-          statusCode: HttpStatus.OK,
-          message: result.message,
-          summary: result.summary
-        };
-      } else {
-        this.logger.warn(`Scraping failed: ${result.message}`);
-        throw new HttpException({
-          statusCode: HttpStatus.BAD_REQUEST,
-          message: result.message
-        }, HttpStatus.BAD_REQUEST);
-      }
-    } catch (error) {
-      this.logger.error(`Error in triggerScraping controller: ${error.message}`);
-      throw new HttpException({
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: 'An unexpected error occurred while triggering the scraping process.',
-        error: error.message
-      }, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    //   if (result.success) {
+    //     return {
+    //       statusCode: HttpStatus.OK,
+    //       message: result.message,
+    //       summary: result.summary
+    //     };
+    //   } else {
+    //     this.logger.warn(`Scraping failed: ${result.message}`);
+    //     throw new HttpException({
+    //       statusCode: HttpStatus.BAD_REQUEST,
+    //       message: result.message
+    //     }, HttpStatus.BAD_REQUEST);
+    //   }
+    // } catch (error) {
+    //   this.logger.error(`Error in triggerScraping controller: ${error.message}`);
+    //   throw new HttpException({
+    //     statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+    //     message: 'An unexpected error occurred while triggering the scraping process.',
+    //     error: error.message
+    //   }, HttpStatus.INTERNAL_SERVER_ERROR);
+    // }
   }
   
 }
